@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Phonic Auditor</string>
+
+    <string name="auditor_ready">Auditor ready</string>
+    <string name="auditor_active">Auditor active</string>
+    <string name="actively_auditing">Actively auditing</string>
+    <string name="audited">Audited</string>
+    <string name="nothing_audited">Nothing audited</string>
+
+</resources>
