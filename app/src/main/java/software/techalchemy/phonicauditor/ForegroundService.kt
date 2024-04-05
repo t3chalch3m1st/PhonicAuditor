@@ -64,16 +64,6 @@ class ForegroundService : Service() {
         return START_NOT_STICKY
     }
 
-    override fun onDestroy() {
-        //Log.d(TAG, "onDestroy")
-        unregisterReceiver(this.bReceiver)
-        super.onDestroy()
-    }
-
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
-    }
-
     private fun createNotification() {
         val utils = Utils(applicationContext)
         utils.createNotificationChannel()
@@ -138,6 +128,16 @@ class ForegroundService : Service() {
         this.audioRecorder?.release()
         this.audioRecorder = null
         this.isRecording = false
+    }
+
+    override fun onDestroy() {
+        //Log.d(TAG, "onDestroy")
+        unregisterReceiver(this.bReceiver)
+        super.onDestroy()
+    }
+
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
     }
 
 }

@@ -110,10 +110,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-    }
-
     private fun startForegroundService() {
         //Log.d(TAG,"onPause")
         this.foregroundIntent = Intent(this.context, ForegroundService::class.java)
@@ -224,6 +220,10 @@ class MainActivity : AppCompatActivity() {
         } catch (e: java.lang.Exception) {
             Log.e(TAG, "onWindowFocusChanged - " + e.cause)
         }
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
     }
 
     override fun onPause() {
