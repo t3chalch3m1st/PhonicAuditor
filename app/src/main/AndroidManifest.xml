@@ -50,7 +50,7 @@
             android:name=".SplashActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:exported="true"
-            android:label="@string/permissions"
+            android:label="@string/app_name"
             android:theme="@style/Theme.PhonicAuditor.Fullscreen"
             android:hardwareAccelerated="true"
             android:launchMode="singleTask">

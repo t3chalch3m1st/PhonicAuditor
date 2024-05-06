@@ -257,12 +257,6 @@
                 android:layout_margin="20dp"
                 android:gravity="center"
                 android:background="@drawable/get_permissions"
-
-                android:topLeftRadius="10dp"
-                android:topRightRadius="10dp"
-                android:bottomLeftRadius="10dp"
-                android:bottomRightRadius="10dp"
-
                 android:text="@string/get_permissions"
                 android:textAlignment="center"
                 android:textColor="@color/black"
