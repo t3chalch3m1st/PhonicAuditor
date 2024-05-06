@@ -43,7 +43,7 @@ class Utils (context: Context) : ContextWrapper(context) {
     }
 
     fun createNotificationChannel() {
-        Log.d(TAG, "createNotificationChanel")
+        //Log.d(TAG, "createNotificationChanel")
         val notificationChannel = NotificationChannel(NOTIFICATION_CHANNEL, NOTIFICATION_TITLE, NotificationManager.IMPORTANCE_HIGH)
         notificationChannel.description = getString(R.string.app_name)
         notificationChannel.setShowBadge(false)
@@ -55,13 +55,13 @@ class Utils (context: Context) : ContextWrapper(context) {
     }
 
     fun buildNotification(title: String, body: String): NotificationCompat.Builder {
+        //Log.d(TAG, "buildNotification")
         val pendingIntent = createNotificationIntent()
         val builder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_icon)
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
         if (pendingIntent != null)
             builder.setContentIntent(pendingIntent)
-        builder.setContentTitle(title)
             .setContentTitle(title)
             .setContentText(body)
             .setSilent(true)
@@ -73,6 +73,7 @@ class Utils (context: Context) : ContextWrapper(context) {
     }
 
     private fun createNotificationIntent(): PendingIntent? {
+        //Log.d(TAG, "createNotificationIntent")
         val activityManager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
         val tasks = activityManager.appTasks
         val task = tasks[0].taskInfo
@@ -85,14 +86,17 @@ class Utils (context: Context) : ContextWrapper(context) {
     }
 
     fun deleteChannel() = apply {
+        //Log.d(TAG, "deleteChannel")
         this.notificationManager?.deleteNotificationChannel(NOTIFICATION_CHANNEL)
     }
 
     fun makeNotification(builder: NotificationCompat.Builder, notificationId: Int) = apply {
+        //Log.d(TAG, "makeNotification")
         this.notificationManager?.notify(notificationId, builder.build())
     }
 
     fun cancelNotification(notificationId: Int) = apply {
+        //Log.d(TAG, "cancelNotification")
         this.notificationManager?.cancel(notificationId)
     }
 
@@ -103,6 +107,7 @@ class Utils (context: Context) : ContextWrapper(context) {
     }
 
     fun loadLocationManager(context: Context?) {
+        //Log.d(TAG, "loadLocationManager")
         try {
             this.locationManager = context!!.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         } catch (e: NullPointerException) {
@@ -112,12 +117,13 @@ class Utils (context: Context) : ContextWrapper(context) {
     }
 
     fun locationManagerLoaded(): Boolean {
+        //Log.d(TAG, "locationManagerLoaded")
         return this.locationManager != null
     }
 
     fun getLocation(): Location? {
         //Log.d(TAG, "getLocation")
-        if (checkPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION)) {
+        if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             val hasGps = this.locationManager!!.isProviderEnabled(LocationManager.GPS_PROVIDER)
             val hasNetwork = this.locationManager!!.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
             val gpsLocationListener = LocationListener { location -> locationByGps = location }
@@ -153,11 +159,6 @@ class Utils (context: Context) : ContextWrapper(context) {
             }
         }
         return this.currentLocation
-    }
-
-    private fun checkPermission(permissionName: String): Boolean {
-        val granted = ContextCompat.checkSelfPermission(this, permissionName)
-        return granted == PackageManager.PERMISSION_GRANTED
     }
 
 }

@@ -52,6 +52,7 @@ class SplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
+        //Log.d(TAG, "onCreate")
 
         this.context = this
         this.notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -74,9 +75,9 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun startMain() {
-        Log.d(TAG,"startMain")
+        //Log.d(TAG,"startMain")
         startActivity(Intent(this@SplashActivity, MainActivity::class.java))
-        finish();
+        finish()
     }
 
     private fun checkRunTimePermission(): Boolean {
@@ -200,7 +201,7 @@ class SplashActivity : AppCompatActivity() {
                             }
                             bringToFront()
                             loading(true)
-                            delay(1500L)
+                            delay(1000L)
                         }
                     }
                     filePermissions.join()
@@ -210,7 +211,7 @@ class SplashActivity : AppCompatActivity() {
 
                 if (!notificationManager!!.isNotificationPolicyAccessGranted) {
                     val policyPermissions = async(Dispatchers.IO) {
-                        //Log.d(TAG, "starting 4")
+                        //Log.d(TAG, "starting policy")
                         val result: Boolean = getPolicyAccess()
 
                         //Log.d(TAG, "notifications: $result")
@@ -219,7 +220,7 @@ class SplashActivity : AppCompatActivity() {
                         }
                         bringToFront()
                         loading(true)
-                        delay(1500L)
+                        delay(1000L)
                     }
                     policyPermissions.join()
                     loading(false)
@@ -231,7 +232,7 @@ class SplashActivity : AppCompatActivity() {
                 } else {
                     AlertDialog.Builder(context)
                         .setTitle("Permission error")
-                        .setMessage("There was a problem granting permission(s).\nYou can update them in settings")
+                        .setMessage("There was a problem granting permission(s).\nYou can update them in Settings > Apps > Permissions")
                         .setPositiveButton(R.string.okay
                         ) { _, _ ->
                             finish()
@@ -285,9 +286,10 @@ class SplashActivity : AppCompatActivity() {
 
     fun permissionGranted(textView: TextView) {
         //Log.d(TAG,"permissionGranted")
-        textView.text = ""
-        textView.setText(R.string.granted)
+        textView.text = "-----------"
+
         textView.setTextColor(ContextCompat.getColor(this.context!!, R.color.green))
+        textView.setText(R.string.granted)
     }
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -303,6 +305,7 @@ class SplashActivity : AppCompatActivity() {
     @SuppressLint("InflateParams")
     @OptIn(DelicateCoroutinesApi::class)
     private fun loading(isLoading: Boolean) {
+        //Log.d(TAG,"loading")
         GlobalScope.launch {
             Looper.prepare()
             if (isLoading) {
@@ -310,11 +313,10 @@ class SplashActivity : AppCompatActivity() {
                 val inflater: LayoutInflater = layoutInflater
                 builder.setView(inflater.inflate(R.layout.loading, null))
                 builder.setCancelable(true)
-
                 loading = builder.create()
                 loading?.show()
             } else {
-                loading?.dismiss();
+                loading?.dismiss()
             }
             Looper.loop()
         }

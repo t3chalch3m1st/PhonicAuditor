@@ -52,12 +52,7 @@ class ForegroundService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         //Log.d(TAG, "onStartCommand")
-/*
-        if (ACTION_STOP_SERVICE == intent.action) {
-            stopForeground(STOP_FOREGROUND_REMOVE)
-            stopSelf()
-        }
-*/
+
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_OFF)
             addAction("android.media.VOLUME_CHANGED_ACTION")
@@ -70,6 +65,7 @@ class ForegroundService : Service() {
     }
 
     private fun createNotification() {
+        //Log.d(TAG, "createNotification")
         val utils = Utils(applicationContext)
         utils.createNotificationChannel()
         val builder = utils.buildNotification(getString(R.string.auditor_ready), getString(R.string.nothing_audited))
@@ -77,6 +73,7 @@ class ForegroundService : Service() {
     }
 
     fun loadMediaRecorder(context: Context?) {
+        //Log.d(TAG, "loadMediaRecorder")
         try {
             this.audioRecorder = MediaRecorder(context!!)
         } catch (e: NullPointerException) {
@@ -86,11 +83,12 @@ class ForegroundService : Service() {
     }
 
     fun mediaRecorderLoaded(): Boolean {
+        //Log.d(TAG, "mediaRecorderLoaded")
         return this.audioRecorder != null
     }
 
     fun startRecording(location: Location?) {
-        //Log.d(TAG, "Start Recording")
+        //Log.d(TAG, "startRecording")
         val latitude: Float? = location?.latitude?.toFloat()
         val longitude: Float? = location?.longitude?.toFloat()
         val recordingsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_RECORDINGS)
@@ -117,9 +115,9 @@ class ForegroundService : Service() {
                 this.audioRecorder?.start()
                 this.isRecording = true
             } catch (e: IOException) {
-                Log.e(TAG, "prepare() failed")
+                Log.e(TAG, "MediaRecorder prepare() failed")
             } catch (e: IllegalStateException) {
-                Log.e(TAG, "prepare() failed")
+                Log.e(TAG, "MediaRecorder prepare() failed")
             }
         } else {
             Log.e(TAG, "File doesn't exist")
@@ -127,7 +125,7 @@ class ForegroundService : Service() {
     }
 
     fun stopRecording() {
-        //Log.d(TAG, "Stop Recording")
+        //Log.d(TAG, "stopRecording")
         this.audioRecorder?.stop()
         this.audioRecorder?.reset()
         this.audioRecorder?.release()

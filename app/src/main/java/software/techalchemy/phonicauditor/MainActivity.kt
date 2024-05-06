@@ -3,7 +3,9 @@ package software.techalchemy.phonicauditor
 
 import android.annotation.SuppressLint
 import android.app.ActivityManager
+import android.app.AlarmManager
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -15,6 +17,7 @@ import android.media.AudioManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
@@ -82,7 +85,7 @@ open class MainActivity : AppCompatActivity() {
     }
 
     private fun fadeOutText(): ViewPropertyAnimator {
-        return this.welcome?.animate()?.alpha(0F)?.setDuration(1000)!!.setStartDelay(3000)
+        return this.welcome?.animate()?.alpha(0F)?.setDuration(1000)!!.setStartDelay(1500)
     }
 
     private fun setPreferredHome() {
@@ -96,9 +99,10 @@ open class MainActivity : AppCompatActivity() {
             filter.addAction("android.intent.action.MAIN")
             filter.addCategory("android.intent.category.HOME")
             filter.addCategory("android.intent.category.DEFAULT")
+            filter.addCategory("android.intent.category.LAUNCHER")
 
             val package_name = "software.techalchemy.phonicauditor"
-            val activity_name = "software.techalchemy.phonicauditor.MainActivity"
+            val activity_name = "software.techalchemy.phonicauditor.SplashActivity"
 
             val activity = ComponentName(package_name, activity_name)
             //val activity = ComponentName(this, MainActivityPlus::class.java)
@@ -122,6 +126,7 @@ open class MainActivity : AppCompatActivity() {
     }
 
     private fun hideNavigationBar() {
+        //Log.d(TAG, "hideNavigationBar")
         val decorView = this.window.decorView
         val timer = Timer()
         val task: TimerTask = object : TimerTask() {
@@ -140,6 +145,7 @@ open class MainActivity : AppCompatActivity() {
 
     @SuppressLint("ClickableViewAccessibility")
     private fun gestureListener() {
+        //Log.d(TAG, "gestureListener")
         val view: RelativeLayout = findViewById(R.id.main_view)
         view.setOnTouchListener(object : View.OnTouchListener {
             var handler: Handler = Handler(Looper.myLooper()!!)
@@ -200,7 +206,7 @@ open class MainActivity : AppCompatActivity() {
 
     fun onHomePressed() {
         Log.d(TAG,"onHomePressed")
-
+        this.onWindowFocusChanged(true)
     }
 
     @Suppress("DEPRECATION")
@@ -232,15 +238,14 @@ open class MainActivity : AppCompatActivity() {
     }
 
     override fun onAttachedToWindow() {
-
+        //Log.d(TAG, "onAttachedToWindow")
         super.onAttachedToWindow()
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        Log.d(TAG, "onNewIntent")
+        //Log.d(TAG, "onNewIntent")
         //Log.d(TAG,"${intent.flags}") // NULL
-
 
     }
 
@@ -299,7 +304,7 @@ open class MainActivity : AppCompatActivity() {
             }
             KeyEvent.KEYCODE_BACK -> {
                 Log.d(TAG,"BACK pressed")
-                //return true;
+                //return true
             }
         }
         return super.onKeyDown(keyCode, event)
