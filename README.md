@@ -14,6 +14,8 @@ This is a discreate Android audio recording app that does the following...
  - Writes GPS location (on starting to record) to audio file metadata for later use.
  - Bluetooth "Selfie" remotes that use VOL UP button will work as remote.
 
+Currently records to "Internal Storage/Recordings/Phonic Auditor/" which will be created if it doesn't exist.
+
 To close app (and Foreground Service), you must "unlock" app (triple tap on view) and click on native "running tasks" soft button and swipe up on Activity to close.
 
 The app was only designed to work with Android API >= 34 (with Samsung Galaxy S23 Ultra as taget device) but can obviously work with any Android 34+ API with obvious tolerances.
