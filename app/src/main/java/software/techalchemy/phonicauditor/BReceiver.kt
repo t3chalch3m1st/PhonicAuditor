@@ -1,5 +1,6 @@
 package software.techalchemy.phonicauditor
 
+
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -10,11 +11,13 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import android.util.Log
+import java.util.Locale
 
 
 class BReceiver : BroadcastReceiver() {
 
     private var context: Context? = null
+    private val mActivity = MainActivity()
     private val fgService = ForegroundService()
     private var xId: String? = null
     private var startTime: Long = 0
@@ -68,6 +71,18 @@ class BReceiver : BroadcastReceiver() {
                     acquire(0)
                 }
             }
+        } else if (action == Intent.ACTION_CLOSE_SYSTEM_DIALOGS) {
+            //Log.d(TAG,"closeSystemDialogs")
+            val SYSTEM_DIALOG_REASON_KEY = "reason"
+            val SYSTEM_DIALOG_REASON_HOME_KEY = "homekey"
+
+            val reason = intent.getStringExtra(SYSTEM_DIALOG_REASON_KEY)
+            if (reason != null) {
+                //Log.e(TAG, "action:$action,reason:$reason")
+                if (reason == SYSTEM_DIALOG_REASON_HOME_KEY) {
+                    mActivity.onHomePressed()
+                }
+            }
         }
     }
 
@@ -114,6 +129,7 @@ class BReceiver : BroadcastReceiver() {
         }
     }
 
+    //@SuppressLint("DefaultLocale")
     private fun updateNotification() {
         //Log.d(TAG,"updateNotifications")
         val utils = Utils(this.context!!)
@@ -122,7 +138,7 @@ class BReceiver : BroadcastReceiver() {
         if (!this.fgService.isRecording) {
             var elapsedTime: Long? = this.stopTime - this.startTime
             val runningTime: String
-            val format = String.format("%%0%dd", 2)
+            val format = String.format(Locale.getDefault(),"%%0%dd", 2)
             elapsedTime = elapsedTime!! / 1000
             val seconds = java.lang.String.format(format, elapsedTime % 60)
             val minutes = java.lang.String.format(format, elapsedTime % 3600 / 60)

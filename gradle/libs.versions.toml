@@ -11,6 +11,8 @@ activity = "1.8.0"
 constraintlayout = "2.1.4"
 playServicesLocation = "21.2.0"
 media3Exoplayer = "1.3.0"
+asyncPermissions = "0.0.2-alpha"
+kpermissions = "3.5.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -23,6 +25,8 @@ androidx-activity = { group = "androidx.activity", name = "activity", version.re
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3Exoplayer" }
+async-permissions = { group = "com.github.k-kagurazaka", name = "async-permissions", version.ref = "asyncPermissions" }
+kpermissions = { group = "com.github.fondesa", name = "kpermissions", version.ref = "kpermissions" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

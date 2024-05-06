@@ -1,6 +1,7 @@
 package software.techalchemy.phonicauditor
 
 
+import android.app.NotificationManager
 import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -26,6 +27,7 @@ class ForegroundService : Service() {
     private var xId: String? = null
     private var bReceiver: BroadcastReceiver? = null
     private var NOTIFICATION_ID: Int? = 101
+    private var notificationManager: NotificationManager? = null
     private var audioRecorder: MediaRecorder? = null
     private var audioFile: File? = null
     private val paFolderName = "Phonic Auditor"
@@ -43,6 +45,7 @@ class ForegroundService : Service() {
         //Log.d(TAG, "onCreate")
         this.context = this
         this.xId = this.getUniqueId().toString()
+        this.notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         this.bReceiver = BReceiver()
         this.isRecording = false
     }
@@ -58,9 +61,11 @@ class ForegroundService : Service() {
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_OFF)
             addAction("android.media.VOLUME_CHANGED_ACTION")
+            addAction(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
         }
         ContextCompat.registerReceiver(this, this.bReceiver, filter, ContextCompat.RECEIVER_EXPORTED)
-        this.createNotification()
+        if (this.notificationManager!!.isNotificationPolicyAccessGranted)
+            this.createNotification()
         return START_NOT_STICKY
     }
 

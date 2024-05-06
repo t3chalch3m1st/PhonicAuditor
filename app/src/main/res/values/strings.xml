@@ -1,10 +1,29 @@
 <resources>
     <string name="app_name">Phonic Auditor</string>
+    <string name="welcome">Welcome to Phonic Auditor!</string>
 
     <string name="auditor_ready">Auditor ready</string>
     <string name="auditor_active">Auditor active</string>
     <string name="actively_auditing">Actively auditing</string>
     <string name="audited">Audited</string>
     <string name="nothing_audited">Nothing audited</string>
+
+    <string name="permissions">Permissions</string>
+    <string name="not_granted">Not Granted</string>
+    <string name="granted">Granted</string>
+
+    <string name="record_audio">Record Audio</string>
+    <string name="fine_location">Fine Location</string>
+    <string name="notifications">Notifications</string>
+    <string name="file_access">File Access</string>
+    <string name="policy_access">Policy Access</string>
+
+    <string name="permissions_info">All of the above permissions are required to use this application</string>
+    <string name="get_permissions">Get Permissions</string>
+
+    <string name="loading">Loading...</string>
+
+    <string name="okay">OK</string>
+    <string name="cancel">Cancel</string>
 
 </resources>

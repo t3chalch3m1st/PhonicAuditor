@@ -13,7 +13,9 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.media.AudioManager
+import android.provider.Settings
 import android.util.Log
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 
@@ -48,7 +50,8 @@ class Utils (context: Context) : ContextWrapper(context) {
         notificationChannel.enableLights(false)
         notificationChannel.enableVibration(false)
         this.notificationManager?.createNotificationChannel(notificationChannel)
-        this.notificationManager?.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
+        if (this.notificationManager!!.isNotificationPolicyAccessGranted)
+            this.notificationManager?.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
     }
 
     fun buildNotification(title: String, body: String): NotificationCompat.Builder {

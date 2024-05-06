@@ -1,5 +1,6 @@
 package software.techalchemy.phonicauditor
 
+
 import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.app.NotificationManager
@@ -11,33 +12,28 @@ import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.media.AudioManager
-import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.os.Handler
 import android.os.Looper
-import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
+import android.view.ViewPropertyAnimator
 import android.view.WindowManager
 import android.widget.RelativeLayout
-import android.widget.Toast
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import java.io.File
 import java.util.Timer
 import java.util.TimerTask
 
 
-class MainActivity : AppCompatActivity() {
-
-    private var mPermissionsHandler: PermissionsHandler? = null
+open class MainActivity : AppCompatActivity() {
 
     private var context: Context? = null
     private var mainView: RelativeLayout? = null
@@ -45,23 +41,22 @@ class MainActivity : AppCompatActivity() {
     private var activityManager: ActivityManager? = null
     private var notificationManager: NotificationManager? = null
     private var audioManager: AudioManager? = null
-    private var appPath: File? = null
     private var appLocked: Boolean = false
+    private var welcome: TextView? = null
 
     companion object {
         private val TAG = MainActivity::class.java.simpleName
     }
 
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //Log.d(TAG,"onCreate")
         setContentView(R.layout.activity_main)
+        //Log.d(TAG,"onCreate")
+
         this.context = applicationContext
         this.mainView = findViewById(R.id.main_view)
         this.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
-
-        this.mPermissionsHandler = PermissionsHandler()
-        this.checkRunTimePermission()
 
         this.activityManager = this.context?.getSystemService(ACTIVITY_SERVICE) as ActivityManager
         this.audioManager = context!!.getSystemService(AUDIO_SERVICE) as AudioManager
@@ -74,39 +69,48 @@ class MainActivity : AppCompatActivity() {
         this.screenWakeLock()
         this.lockApp()
 
-        /*
-        //val textView: TextView = findViewById(R.id.text)
-        //val textView2: TextView = findViewById(R.id.text2)
-        val button: Button = findViewById(R.id.button)
-        button.setOnClickListener(object : View.OnClickListener {
-            override fun onClick(view: View?) {
-                //Log.d(TAG,"Button CLICK")
-                getLocation()
-            }
-        })*/
+        this.welcome = findViewById(R.id.welcome)
+        this.fadeInText().start()
+    }
 
+    private fun fadeInText(): ViewPropertyAnimator {
+        return this.welcome?.animate()?.alpha(1F)?.setDuration(1000)?.setStartDelay(250)!!.withEndAction(this.fadeInEnd)
+    }
+
+    private val fadeInEnd = Runnable {
+        fadeOutText().start()
+    }
+
+    private fun fadeOutText(): ViewPropertyAnimator {
+        return this.welcome?.animate()?.alpha(0F)?.setDuration(1000)!!.setStartDelay(3000)
     }
 
     private fun setPreferredHome() {
         Log.d(TAG, "setPreferredHome")
 
-        val filter = IntentFilter()
-        filter.addAction("android.intent.action.MAIN")
-        filter.addCategory("android.intent.category.HOME")
-        filter.addCategory("android.intent.category.DEFAULT")
+        val str = packageManager.resolveActivity(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME), PackageManager.MATCH_DEFAULT_ONLY)!!.activityInfo.packageName
+        val isMyLauncherDefault = (str == packageName)
 
-        val package_name = "software.techalchemy.phonicauditor.PREFERRED_PACKAGE_KEY"
-        val activity_name = "software.techalchemy.phonicauditor.PREFERRED_ACTIVITY_KEY"
+        if (!isMyLauncherDefault) {
+            val filter = IntentFilter()
+            filter.addAction("android.intent.action.MAIN")
+            filter.addCategory("android.intent.category.HOME")
+            filter.addCategory("android.intent.category.DEFAULT")
 
-        val components = arrayOf(
-            ComponentName("com.android.launcher","com.android.launcher2.Launcher"),
-            ComponentName(package_name, activity_name)
-        )
-        val activity = ComponentName(package_name, activity_name)
+            val package_name = "software.techalchemy.phonicauditor"
+            val activity_name = "software.techalchemy.phonicauditor.MainActivity"
 
-        val packageManager: PackageManager = packageManager
-        @Suppress("DEPRECATION")
-        packageManager.addPreferredActivity(filter, IntentFilter.MATCH_CATEGORY_SCHEME, components, activity);
+            val activity = ComponentName(package_name, activity_name)
+            //val activity = ComponentName(this, MainActivityPlus::class.java)
+
+            packageManager.setComponentEnabledSetting(activity, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP)
+
+            val selector = Intent(Intent.ACTION_MAIN)
+            selector.addCategory(Intent.CATEGORY_HOME)
+            startActivity(selector)
+
+            packageManager.setComponentEnabledSetting(activity, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP)
+        }
 
     }
 
@@ -131,7 +135,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        timer.scheduleAtFixedRate(task, 1, 2)
+        timer.schedule(task, 1, 2)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -194,6 +198,11 @@ class MainActivity : AppCompatActivity() {
         this.mainView?.setBackgroundColor(getColor(R.color.light_black))
     }
 
+    fun onHomePressed() {
+        Log.d(TAG,"onHomePressed")
+
+    }
+
     @Suppress("DEPRECATION")
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
@@ -223,7 +232,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onAttachedToWindow() {
+
         super.onAttachedToWindow()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        Log.d(TAG, "onNewIntent")
+        //Log.d(TAG,"${intent.flags}") // NULL
+
+
     }
 
     override fun onPause() {
@@ -231,14 +249,21 @@ class MainActivity : AppCompatActivity() {
         if (this.appLocked) {
             this.activityManager?.moveTaskToFront(taskId, 0)
         }
-        this.notificationManager?.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
+        if (this.notificationManager!!.isNotificationPolicyAccessGranted) {
+            this.notificationManager?.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
+            this.audioManager?.ringerMode = AudioManager.RINGER_MODE_NORMAL
+        }
         super.onPause()
     }
 
     override fun onResume() {
         super.onResume()
         //Log.d(TAG,"onResume")
-        this.notificationManager?.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
+
+        if (this.notificationManager!!.isNotificationPolicyAccessGranted) {
+            this.notificationManager?.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
+            this.audioManager?.ringerMode = AudioManager.RINGER_MODE_SILENT
+        }
         this.lockApp()
     }
 
@@ -253,7 +278,10 @@ class MainActivity : AppCompatActivity() {
         if (!this.appLocked) {
             stopService(this.foregroundIntent)
         }
-        this.notificationManager?.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
+        if (this.notificationManager!!.isNotificationPolicyAccessGranted) {
+            this.notificationManager?.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
+            this.audioManager?.ringerMode = AudioManager.RINGER_MODE_NORMAL
+        }
         super.onDestroy()
     }
 
@@ -269,94 +297,18 @@ class MainActivity : AppCompatActivity() {
                 this.audioManager?.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE)
                 return true
             }
-            KeyEvent.KEYCODE_HOME -> {
-                //Log.d(TAG,"HOME pressed")
+            KeyEvent.KEYCODE_BACK -> {
+                Log.d(TAG,"BACK pressed")
+                //return true;
             }
         }
         return super.onKeyDown(keyCode, event)
     }
 
-    private fun checkSavePath() {
-        //Log.i(TAG, "checkSavePath")
-        val recordingsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_RECORDINGS).toString()
-        val paFolderName = getString(R.string.app_name)
-        this.appPath = File(recordingsDir + File.separator + paFolderName)
-        if (!this.appPath!!.isDirectory) {
-            this.appPath!!.mkdir()
-        }
-    }
+    override fun onUserLeaveHint() {
+        Log.d(TAG, "onUserLeaveHint")
 
-    private fun getFilePermissions() {
-        if (!Environment.isExternalStorageManager()) {
-            try {
-                val intent = Intent()
-                intent.setAction(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION) // 21 - 33
-                val uri = Uri.fromParts("package", this.packageName, null)
-                intent.setData(uri)
-                startActivity(intent)
-            } catch (e: Exception) {
-                val intent = Intent()
-                intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
-                startActivity(intent)
-            }
-        } else {
-            this.checkSavePath()
-        }
-    }
-
-    private fun checkRunTimePermission() {
-        //Log.d(TAG,"checkRunTimePermission")
-        this.getFilePermissions()
-
-        try {
-            val intent = Intent()
-            intent.setAction(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS) // 21 - 33
-            val uri = Uri.fromParts("package", this.packageName, null)
-            intent.setData(uri)
-            startActivity(intent)
-        } catch (e: Exception) {
-            val intent = Intent()
-            intent.setAction(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
-            startActivity(intent)
-        }
-
-        mPermissionsHandler!!.requestPermission(this,
-            arrayOf<String>(
-                android.Manifest.permission.SYSTEM_ALERT_WINDOW,
-                android.Manifest.permission.ACCESS_NOTIFICATION_POLICY,
-                android.Manifest.permission.POST_NOTIFICATIONS,
-                android.Manifest.permission.WAKE_LOCK,
-                android.Manifest.permission.TURN_SCREEN_ON,
-                android.Manifest.permission.SET_PREFERRED_APPLICATIONS,
-                android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCK_TASK,
-
-                android.Manifest.permission.RECORD_AUDIO,
-                android.Manifest.permission.FOREGROUND_SERVICE,
-                android.Manifest.permission.FOREGROUND_SERVICE_MICROPHONE,
-                android.Manifest.permission.FOREGROUND_SERVICE_LOCATION,
-
-                android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                android.Manifest.permission.READ_EXTERNAL_STORAGE,
-                android.Manifest.permission.MANAGE_EXTERNAL_STORAGE,
-
-                android.Manifest.permission.INTERNET,
-                //android.Manifest.permission.ACCESS_NETWORK_STATE,
-                android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                android.Manifest.permission.ACCESS_FINE_LOCATION,
-                android.Manifest.permission.ACCESS_BACKGROUND_LOCATION,
-            ), 123,
-            object : PermissionsHandler.RequestPermissionListener {
-                override fun onSuccess() {
-                    //Log.d(TAG,"onSuccess")
-                    //Toast.makeText(MainActivity.this, "request permission success", Toast.LENGTH_SHORT).show();
-                }
-
-                override fun onFailed() {
-                    //Log.d(TAG,"onFailed")
-                    Toast.makeText(this@MainActivity, "request permission failed", Toast.LENGTH_SHORT).show()
-                }
-            }
-        )
+        super.onUserLeaveHint()
     }
 
     private fun isServiceRunning(serviceClassName: String?): Boolean {
