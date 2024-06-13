@@ -16,6 +16,6 @@ This is a discreate Android audio recording app that does the following...
 
 Currently records to "Internal Storage/Recordings/Phonic Auditor/" which will be created if it doesn't exist.
 
-To close app (and Foreground Service), you must "unlock" app (triple tap on view while in Activity) and click on native "recent/running tasks" soft button and swipe up on Phonic Auditor Activity to close.  If you cam't get the notification service to stop...  Double check you are accessing main activity with black screen, then triple tap for light gray screeen (unlocked) and use recent activities button to show app and swip up on it.
+To close app (and Foreground Service), you must "unlock" app (triple tap on view while in Activity) and click on native "recent/running tasks" soft button and swipe up on Phonic Auditor Activity to close.
 
 The app was only designed to work with Android API >= 34 (with Samsung Galaxy S23 Ultra as taget device) but can obviously work with any Android 34+ API with obvious tolerances.
