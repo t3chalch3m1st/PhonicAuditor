@@ -3,9 +3,8 @@ package software.techalchemy.phonicauditor
 
 import android.annotation.SuppressLint
 import android.app.ActivityManager
-import android.app.AlarmManager
+import android.app.AlertDialog
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -17,7 +16,6 @@ import android.media.AudioManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.os.SystemClock
 import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
@@ -51,7 +49,6 @@ open class MainActivity : AppCompatActivity() {
         private val TAG = MainActivity::class.java.simpleName
     }
 
-    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -176,6 +173,7 @@ open class MainActivity : AppCompatActivity() {
                         } else if (numberOfTaps == 2) { // Double tap
                             handler.postDelayed(Runnable {
                               // TODO
+                                showDialog(this@MainActivity, "ERROR!", "The action you just requested was denied because of the way you approached the gesture.")
                             }, ViewConfiguration.getDoubleTapTimeout().toLong())
                         }
                     }
@@ -325,6 +323,15 @@ open class MainActivity : AppCompatActivity() {
             }
         }
         return false
+    }
+
+    fun showDialog(context: Context, title: String, mess: String?) {
+        // Create a new instance of the AlertDialog.Builder class
+        val alertDialog = AlertDialog.Builder(context)
+        alertDialog.setIcon(android.R.drawable.ic_dialog_alert)
+            .setTitle(title)
+            .setMessage(mess)
+        alertDialog.show()
     }
 
 }

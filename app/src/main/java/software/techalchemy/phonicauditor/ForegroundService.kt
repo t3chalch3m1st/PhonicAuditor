@@ -23,8 +23,9 @@ import java.util.Locale
 
 class ForegroundService : Service() {
 
-    private var context: Context? = null
     private var xId: String? = null
+    private var context: Context? = null
+    private var mActivity: MainActivity? = null
     private var bReceiver: BroadcastReceiver? = null
     private var NOTIFICATION_ID: Int? = 101
     private var notificationManager: NotificationManager? = null
@@ -43,7 +44,8 @@ class ForegroundService : Service() {
     override fun onCreate() {
         super.onCreate()
         //Log.d(TAG, "onCreate")
-        this.context = this
+        this.context = applicationContext
+        this.mActivity = MainActivity()
         this.xId = this.getUniqueId().toString()
         this.notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         this.bReceiver = BReceiver()
@@ -52,7 +54,6 @@ class ForegroundService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         //Log.d(TAG, "onStartCommand")
-
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_OFF)
             addAction("android.media.VOLUME_CHANGED_ACTION")
@@ -67,8 +68,8 @@ class ForegroundService : Service() {
     private fun createNotification() {
         //Log.d(TAG, "createNotification")
         val utils = Utils(applicationContext)
-        utils.createNotificationChannel()
-        val builder = utils.buildNotification(getString(R.string.auditor_ready), getString(R.string.nothing_audited))
+        utils!!.createNotificationChannel()
+        val builder = utils!!.buildNotification(getString(R.string.auditor_ready), getString(R.string.nothing_audited))
         startForeground(NOTIFICATION_ID!!, builder.build())
     }
 
@@ -89,38 +90,56 @@ class ForegroundService : Service() {
 
     fun startRecording(location: Location?) {
         //Log.d(TAG, "startRecording")
+
         val latitude: Float? = location?.latitude?.toFloat()
         val longitude: Float? = location?.longitude?.toFloat()
-        val recordingsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_RECORDINGS)
-        val appPath = File(recordingsDir, this.paFolderName)
-        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-        this.audioFile = File.createTempFile(timeStamp.toString(), ".m4a", appPath)
 
-        if (this.audioFile?.exists() == true && this.audioFile?.isFile == true) {
-            this.audioRecorder?.setOutputFile(this.audioFile?.absolutePath)
-            this.audioRecorder?.setAudioSource(MediaRecorder.AudioSource.MIC)
-            this.audioRecorder?.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-            this.audioRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.HE_AAC)
-            this.audioRecorder?.setAudioEncodingBitRate(128000)
-            this.audioRecorder?.setAudioSamplingRate(48000)
-            this.audioRecorder?.setAudioChannels(2)
-            this.audioRecorder?.setMaxDuration(-1)
-            this.audioRecorder?.setMaxFileSize(-1)
-            this.audioRecorder?.setPreferredMicrophoneDirection(MicrophoneDirection.MIC_DIRECTION_AWAY_FROM_USER)
-            this.audioRecorder?.setPreferredMicrophoneFieldDimension(1F)
-            this.audioRecorder?.setLocation(latitude!!, longitude!!)
+        val SdCard = Environment.getExternalStorageDirectory()
+        Log.d(TAG, "dir $SdCard")
 
-            try {
-                this.audioRecorder?.prepare()
-                this.audioRecorder?.start()
-                this.isRecording = true
-            } catch (e: IOException) {
-                Log.e(TAG, "MediaRecorder prepare() failed")
-            } catch (e: IllegalStateException) {
-                Log.e(TAG, "MediaRecorder prepare() failed")
+        try {
+            var recordingsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_RECORDINGS) // /storage/emulated/0/Recordings
+            //val recordingsDir = ContextCompat.getExternalFilesDirs(applicationContext, Environment.DIRECTORY_DOCUMENTS)[0] // NOT /sdcard/Recordings
+            if (!recordingsDir.isDirectory) {
+                recordingsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
             }
-        } else {
-            Log.e(TAG, "File doesn't exist")
+            //Log.d(TAG,"dir: $recordingsDir")
+            val appPath = File(recordingsDir, this.paFolderName)
+            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+            this.audioFile = File.createTempFile(timeStamp.toString(), ".m4a", appPath)
+            Log.i(TAG, "Saving to: ${this.audioFile}")
+
+            if (this.audioFile?.exists() == true && this.audioFile?.isFile == true) {
+                this.audioRecorder?.setOutputFile(this.audioFile?.absolutePath)
+                this.audioRecorder?.setAudioSource(MediaRecorder.AudioSource.MIC)
+                this.audioRecorder?.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+                this.audioRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.HE_AAC)
+                this.audioRecorder?.setAudioEncodingBitRate(128000)
+                this.audioRecorder?.setAudioSamplingRate(48000)
+                this.audioRecorder?.setAudioChannels(2)
+                this.audioRecorder?.setMaxDuration(-1)
+                this.audioRecorder?.setMaxFileSize(-1)
+                this.audioRecorder?.setPreferredMicrophoneDirection(MicrophoneDirection.MIC_DIRECTION_AWAY_FROM_USER)
+                this.audioRecorder?.setPreferredMicrophoneFieldDimension(1F)
+                if (latitude != null && longitude != null) {
+                    this.audioRecorder?.setLocation(latitude!!, longitude!!)
+                }
+                try {
+                    this.audioRecorder?.prepare()
+                    this.audioRecorder?.start()
+                    this.isRecording = true
+                } catch (e: IOException) {
+                    Log.e(TAG, "MediaRecorder prepare() failed")
+
+                } catch (e: IllegalStateException) {
+                    Log.e(TAG, "MediaRecorder prepare() failed")
+                }
+            } else {
+                Log.e(TAG, "File doesn't exist")
+            }
+        } catch (e: RuntimeException) {
+            Log.e(TAG, "${e.message}")
+            this.mActivity?.showDialog(this, "ERROR", e.message)
         }
     }
 

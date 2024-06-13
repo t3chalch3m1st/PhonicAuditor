@@ -19,6 +19,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getExternalFilesDirs
 import com.fondesa.kpermissions.extension.permissionsBuilder
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +49,6 @@ class SplashActivity : AppCompatActivity() {
         private val TAG = SplashActivity::class.java.simpleName
     }
 
-    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
@@ -89,17 +89,17 @@ class SplashActivity : AppCompatActivity() {
         var files = false
         var policy = false
 
-        if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-            this.permissionGranted(recordAudio!!)
-            audio = true
+        if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            this.permissionGranted(notifications!!)
+            posts = true
         }
         if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             this.permissionGranted(fineLocation!!)
             location = true
         }
-        if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-            this.permissionGranted(notifications!!)
-            posts = true
+        if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            this.permissionGranted(recordAudio!!)
+            audio = true
         }
         if (Environment.isExternalStorageManager()) {
             this.permissionGranted(fileAccess!!)
@@ -120,57 +120,12 @@ class SplashActivity : AppCompatActivity() {
         //Log.d(TAG,"checkRuntimePermissions")
         thread {
             runBlocking {
-
+                // https://github.com/fondesa/kpermissions?tab=readme-ov-file
                 var gotoNext = false
-                if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                    val audioPermissions = async(Dispatchers.IO) {
-                        //Log.d(TAG, "starting audio")
-                        val request =
-                            permissionsBuilder(android.Manifest.permission.RECORD_AUDIO).build()
-                        request.addListener { result ->
-                            //Log.d(TAG, "audio: ${result[0].toString()}")
-                            if (result[0].toString() == "Granted(permission=android.permission.RECORD_AUDIO)") {
-                                permissionGranted(recordAudio!!)
-                                gotoNext = true
-                            } // ShouldShowRationale(permission=android.permission.ACCESS_FINE_LOCATION)
-                        }
-                        request.send()
-                    }
-                    audioPermissions.await()
-                    while (!gotoNext) {
-                        delay(500L)
-                    }
-                    audioPermissions.join()
-                    gotoNext = false
-                }
-
-                if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    val locationPermissions = async(Dispatchers.IO) {
-                        //Log.d(TAG, "starting location")
-                        val request =
-                            permissionsBuilder(android.Manifest.permission.ACCESS_FINE_LOCATION).build()
-                        request.addListener { result ->
-                            //Log.d(TAG, "fine: $result")
-                            if (result[0].toString() == "Granted(permission=android.permission.ACCESS_FINE_LOCATION)") {
-                                permissionGranted(fineLocation!!)
-                                gotoNext = true
-                            }
-                        }
-                        request.send()
-                    }
-                    locationPermissions.await()
-                    while (!gotoNext) {
-                        delay(500L)
-                    }
-                    locationPermissions.join()
-                    gotoNext = false
-                }
-
                 if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                     val postNotifications = async(Dispatchers.IO) {
                         //Log.d(TAG, "starting notifications")
-                        val request =
-                            permissionsBuilder(android.Manifest.permission.POST_NOTIFICATIONS).build()
+                        val request = permissionsBuilder(android.Manifest.permission.POST_NOTIFICATIONS).build()
                         request.addListener { result ->
                             //Log.d(TAG, "post: $result")
                             if (result[0].toString() == "Granted(permission=android.permission.POST_NOTIFICATIONS)") {
@@ -188,21 +143,60 @@ class SplashActivity : AppCompatActivity() {
                     gotoNext = false
                 }
 
+                if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    val locationPermissions = async(Dispatchers.IO) {
+                        //Log.d(TAG, "starting location")
+                        val request = permissionsBuilder(android.Manifest.permission.ACCESS_FINE_LOCATION).build()
+                        request.addListener { result ->
+                            //Log.d(TAG, "fine: $result")
+                            if (result[0].toString() == "Granted(permission=android.permission.ACCESS_FINE_LOCATION)") {
+                                permissionGranted(fineLocation!!)
+                                gotoNext = true
+                            }
+                        }
+                        request.send()
+                    }
+                    locationPermissions.await()
+                    while (!gotoNext) {
+                        delay(500L)
+                    }
+                    locationPermissions.join()
+                    gotoNext = false
+                }
+
+                if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                    val audioPermissions = async(Dispatchers.IO) {
+                        //Log.d(TAG, "starting audio")
+                        val request = permissionsBuilder(android.Manifest.permission.RECORD_AUDIO).build()
+                        request.addListener { result ->
+                            //Log.d(TAG, "audio: ${result[0].toString()}")
+                            if (result[0].toString() == "Granted(permission=android.permission.RECORD_AUDIO)") {
+                                permissionGranted(recordAudio!!)
+                                gotoNext = true
+                            } // ShouldShowRationale(permission=android.permission.ACCESS_FINE_LOCATION)
+                        }
+                        request.send()
+                    }
+                    audioPermissions.await()
+                    while (!gotoNext) {
+                        delay(500L)
+                    }
+                    audioPermissions.join()
+                    gotoNext = false
+                }
+
                 if (!Environment.isExternalStorageManager()) {
                     val filePermissions = async(Dispatchers.IO) {
                         //Log.d(TAG, "starting files")
-
-                        if (!Environment.isExternalStorageManager()) {
-                            val result: Boolean = getFilePermissions()
-
-                            //Log.d(TAG, "files: $result")
-                            if (result) {
-                                permissionGranted(fileAccess!!)
-                            }
-                            bringToFront()
-                            loading(true)
-                            delay(1000L)
+                        val result: Boolean = getFilePermissions()
+                        //Log.d(TAG, "files: $result")
+                        if (result) {
+                            permissionGranted(fileAccess!!)
                         }
+                        bringToFront()
+                        loading(true)
+                        checkSavePath()
+                        delay(1000L)
                     }
                     filePermissions.join()
                     gotoNext = false
@@ -213,7 +207,6 @@ class SplashActivity : AppCompatActivity() {
                     val policyPermissions = async(Dispatchers.IO) {
                         //Log.d(TAG, "starting policy")
                         val result: Boolean = getPolicyAccess()
-
                         //Log.d(TAG, "notifications: $result")
                         if (result) {
                             permissionGranted(policyAccess!!)
@@ -247,11 +240,28 @@ class SplashActivity : AppCompatActivity() {
 
     private fun checkSavePath() {
         //Log.d(TAG, "checkSavePath")
-        val recordingsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_RECORDINGS).toString()
-        val paFolderName = getString(R.string.app_name)
-        val appPath = File(recordingsDir + File.separator + paFolderName)
-        if (!appPath.isDirectory) {
-            appPath.mkdir()
+
+        var recordingsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_RECORDINGS)
+        if (!recordingsDir.isDirectory) {
+            recordingsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+        }
+        //Log.d(TAG, ":: $recordingsDir")
+        if (recordingsDir != null) {
+            val paFolderName = getString(R.string.app_name)
+            val appPath = File(recordingsDir.toString() + File.separator + paFolderName)
+            if (!appPath.isDirectory) {
+                appPath.mkdir()
+            }
+        } else {
+            AlertDialog.Builder(context)
+                .setTitle("Directory error")
+                .setMessage("There was a problem finding a location to save audits.\nMake sure you have permission.")
+                .setPositiveButton(R.string.okay) { _, _ ->
+                    finish()
+                }
+                //.setNegativeButton(android.R.string.cancel, null)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show()
         }
     }
 
@@ -286,8 +296,6 @@ class SplashActivity : AppCompatActivity() {
 
     fun permissionGranted(textView: TextView) {
         //Log.d(TAG,"permissionGranted")
-        textView.text = "-----------"
-
         textView.setTextColor(ContextCompat.getColor(this.context!!, R.color.green))
         textView.setText(R.string.granted)
     }
@@ -321,12 +329,14 @@ class SplashActivity : AppCompatActivity() {
             Looper.loop()
         }
     }
+
     private fun bringToFront() {
         //Log.d(TAG,"bringToFront")
         val intent = Intent(this, javaClass)
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         this.context?.startActivity(intent)
     }
+
     override fun onPause() {
         //Log.d(TAG,"onPause")
 

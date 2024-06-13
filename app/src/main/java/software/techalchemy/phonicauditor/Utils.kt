@@ -2,6 +2,7 @@ package software.techalchemy.phonicauditor
 
 import android.app.Activity
 import android.app.ActivityManager
+import android.app.AlertDialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -13,11 +14,8 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.media.AudioManager
-import android.provider.Settings
 import android.util.Log
-import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
 
 
 class Utils (context: Context) : ContextWrapper(context) {
@@ -159,6 +157,20 @@ class Utils (context: Context) : ContextWrapper(context) {
             }
         }
         return this.currentLocation
+    }
+
+    fun throwError(error: String?) {
+        Log.d(TAG, "throwError")
+        AlertDialog.Builder(context)
+            .setTitle("Error")
+            .setMessage(error)
+            .setPositiveButton(R.string.okay
+            ) { _, _ ->
+
+            }
+            //.setNegativeButton(android.R.string.cancel, null)
+            .setIcon(android.R.drawable.ic_dialog_alert)
+            .show()
     }
 
 }

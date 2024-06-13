@@ -91,7 +91,7 @@ class BReceiver : BroadcastReceiver() {
         val vibratorManager: Vibrator = (context?.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager).defaultVibrator
         this.fgService.startRecording(this.currentLocation)
         this.startTime = System.currentTimeMillis()
-        vibratorManager.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE))
+        vibratorManager.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
     }
 
     private fun ceaseRecording() {
@@ -100,8 +100,8 @@ class BReceiver : BroadcastReceiver() {
         this.fgService.stopRecording()
         this.stopTime = System.currentTimeMillis()
         val vDelay = 0
-        val vVibrate = 500
-        val vSleep = 250
+        val vVibrate = 100
+        val vSleep = 100
         val vStart = -1
         val vibratePattern = longArrayOf(
             vDelay.toLong(),
@@ -129,7 +129,6 @@ class BReceiver : BroadcastReceiver() {
         }
     }
 
-    //@SuppressLint("DefaultLocale")
     private fun updateNotification() {
         //Log.d(TAG,"updateNotifications")
         val utils = Utils(this.context!!)
